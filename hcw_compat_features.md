@@ -88,6 +88,7 @@ Enable robust interoperability with `hardcorewater` so that:
 - Harmony prefix/postfix patch around aqueduct refill branch that:
   - inspects source-side fluid family via Archimedes manager (`TryResolveManagedWaterFamily`, `TryResolveVanillaWaterFamily`),
   - resolves desired replacement block through Archimedes manager when source family is Archimedes-managed (`GetManagedBlock(familyId, "still", level)`),
+  - when calling from C#, pass **`string` for the flow argument** (e.g. `flowLetter.ToString()`), matching `GetManagedBlock(string familyId, string flow, int height)` — avoids reflection/overload mismatches with `char`,
   - preserves vanilla behavior for non-Archimedes fluids.
 
 **Alternative (lower safety):**
