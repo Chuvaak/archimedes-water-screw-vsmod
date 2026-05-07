@@ -1471,9 +1471,9 @@ public sealed partial class ArchimedesWaterNetworkManager : IDisposable
         NotifyControllerSourceAssigned(ownerId, pos, "ensure source owned");
 
         Block currentFluid = api.World.BlockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
-        if (!IsArchimedesSourceBlock(currentFluid) ||
-            !TryResolveManagedWaterFamily(currentFluid, out string currentFamilyId) ||
-            !string.Equals(currentFamilyId, familyId, StringComparison.Ordinal))
+        if (!TryResolveManagedWaterFamily(currentFluid, out string currentFamilyId) ||
+            !string.Equals(currentFamilyId, familyId, StringComparison.Ordinal) ||
+            !IsArchimedesManagedFlowOrSourceHeight(currentFluid))
         {
             SetManagedSource(pos, familyId);
             CaptureVanillaLocksAround(pos, familyId);
