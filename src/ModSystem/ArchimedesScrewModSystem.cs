@@ -138,7 +138,7 @@ public sealed class ArchimedesScrewModSystem : ModSystem
     {
         ArchimedesScrewConfig.WaterConfig w = config.Water;
         api.Logger.Notification(
-            "{0} Effective config: fastTickMs={1}, idleTickMs={2}, globalTickMs={3}, maxControllersPerGlobalTick={4}, assemblyAnalysisCacheMs={5}, maxBlocksPerStep={6}, enableIncrementalSourceDrain={7}, incrementalDrainStepIntervalMs={8}, maxIncrementalDrainStepsPerGlobalTick={9}, maxScrewLength={10}, minNetworkSpeed={11}, vanillaClaimHaloDepth={12}, intentQueueMaxPerGlobalTick={13}, enableRelaySources={14}, maxRelayPromotionsPerTick={15}, maxRelaySourcesPerController={16}, requiredMechPowerForMaxRelay={17}, relayPowerHysteresisPct={18}, relayCandidateOrderingMode={19}, debugControllerStatsOnInteract={20}, enableWaterfallCompat={21}, waterfallCompatDebug={22}, verboseDebug={23}",
+            "{0} Effective config: fastTickMs={1}, idleTickMs={2}, globalTickMs={3}, maxControllersPerGlobalTick={4}, assemblyAnalysisCacheMs={5}, maxBlocksPerStep={6}, enableIncrementalSourceDrain={7}, incrementalDrainStepIntervalMs={8}, maxIncrementalDrainStepsPerGlobalTick={9}, maxScrewLength={10}, minNetworkSpeed={11}, vanillaClaimHaloDepth={12}, intentQueueMaxPerGlobalTick={13}, enableRelaySources={14}, maxRelayPromotionsPerTick={15}, maxRelaySourcesPerController={16}, requiredMechPowerForMaxRelay={17}, relayPowerHysteresisPct={18}, relayCandidateOrderingMode={19}, debugControllerStatsOnInteract={20}, enableWaterfallCompat={21}, waterfallCompatDebug={22}, disableVanillaWaterSourceRegen={23}, verboseDebug={24}",
             LogPrefix,
             w.FastTickMs,
             w.IdleTickMs,
@@ -162,6 +162,7 @@ public sealed class ArchimedesScrewModSystem : ModSystem
             w.DebugControllerStatsOnInteract,
             w.EnableWaterfallCompat,
             w.WaterfallCompatDebug,
+            w.DisableVanillaWaterSourceRegen,
             w.VerboseDebug
         );
     }
@@ -206,7 +207,7 @@ public sealed class ArchimedesScrewModSystem : ModSystem
         WaterManager = new ArchimedesWaterNetworkManager(api, Config);
         WaterManager.StartCentralWaterTick();
         waterSourceRegenCompatBridge = new WaterSourceRegenCompatBridge(api);
-        waterSourceRegenCompatBridge.EnsurePatched();
+        waterSourceRegenCompatBridge.RefreshForConfig(Config.Water);
         waterfallCompatBridge = new WaterfallCompatBridge(api);
         waterfallCompatBridge.RefreshForConfig(Config.Water);
         api.Logger.Notification("{0} Server side initialized (central water tick)", LogPrefix);
@@ -626,6 +627,7 @@ public sealed class ArchimedesScrewModSystem : ModSystem
         }
 
         waterfallCompatBridge?.RefreshForConfig(Config.Water);
+        waterSourceRegenCompatBridge?.RefreshForConfig(Config.Water);
 
         sapi.Logger.Notification("{0} Applied pending Config Lib settings on save", LogPrefix);
         LogEffectiveConfig(sapi, Config);
@@ -738,6 +740,9 @@ public sealed class ArchimedesScrewModSystem : ModSystem
                 return true;
             case "WATERFALL_COMPAT_DEBUG":
                 target.WaterfallCompatDebug = tree.GetBool("value");
+                return true;
+            case "DISABLE_VANILLA_WATER_SOURCE_REGEN":
+                target.DisableVanillaWaterSourceRegen = tree.GetBool("value");
                 return true;
             case "VERBOSE_DEBUG":
                 target.VerboseDebug = tree.GetBool("value");

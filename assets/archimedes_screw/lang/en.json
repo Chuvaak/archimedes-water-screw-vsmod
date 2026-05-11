@@ -31,6 +31,7 @@
   "config-relay-power-hysteresis-pct": "Relay power hysteresis (%)",
   "config-relay-candidate-ordering-mode": "Relay candidate ordering mode",
   "config-debug-controller-stats-on-interact": "Debug controller stats on right-click",
+  "config-disable-vanilla-water-source-regen": "Disable vanilla water source regen",
   "config-enable-waterfall-compat": "Enable Waterfall compatibility",
   "config-waterfall-compat-debug": "Waterfall compatibility debug logging",
   "config-verbose-debug": "Verbose debug logging",

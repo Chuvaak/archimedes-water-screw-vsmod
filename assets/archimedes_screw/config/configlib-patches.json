@@ -21,6 +21,7 @@
         "water/enableRelaySources": "ENABLE_RELAY_SOURCES",
         "water/debugControllerStatsOnInteract": "DEBUG_CONTROLLER_STATS_ON_INTERACT",
         "water/enableWaterfallCompat": "ENABLE_WATERFALL_COMPAT",
+        "water/disableVanillaWaterSourceRegen": "DISABLE_VANILLA_WATER_SOURCE_REGEN",
         "water/waterfallCompatDebug": "WATERFALL_COMPAT_DEBUG",
         "water/verboseDebug": "VERBOSE_DEBUG"
       }
@@ -193,6 +194,13 @@
         "ingui": "archimedes_screw:config-enable-waterfall-compat",
         "weight": 6.0,
         "comment": "Enable compatibility hook for the Waterfall mod when installed.",
+        "default": true
+      },
+      "DISABLE_VANILLA_WATER_SOURCE_REGEN": {
+        "name": "disable-vanilla-water-source-regen",
+        "ingui": "archimedes_screw:config-disable-vanilla-water-source-regen",
+        "weight": 6.05,
+        "comment": "When true, Archimedes applies a Harmony patch that prevents vanilla dynamic water source regeneration in finite spreading liquid updates. When false, vanilla source promotion behaves as in the base game. Saving Mod Config applies this toggle on the running server; if fluid or sources still look wrong after changing it, restart the game or reload the world.",
         "default": true
       },
       "WATERFALL_COMPAT_DEBUG": {

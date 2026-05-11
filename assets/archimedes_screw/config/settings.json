@@ -18,6 +18,7 @@
     "relayCandidateOrderingMode": "deterministic",
     "debugControllerStatsOnInteract": false,
     "enableWaterfallCompat": true,
+    "disableVanillaWaterSourceRegen": true,
     "waterfallCompatDebug": false,
     "verboseDebug": false
   }

@@ -105,6 +105,11 @@ public sealed class ArchimedesScrewConfig
         public bool WaterfallCompatDebug { get; set; } = false;
 
         /// <summary>
+        /// When true, applies a Harmony patch that blocks vanilla dynamic water source regeneration in spreading-liquid updates.
+        /// </summary>
+        public bool DisableVanillaWaterSourceRegen { get; set; } = true;
+
+        /// <summary>
         /// Routes non-essential mod diagnostics to verbose debug log entries.
         /// </summary>
         public bool VerboseDebug { get; set; } = false;
@@ -136,6 +141,7 @@ public sealed class ArchimedesScrewConfig
             DebugControllerStatsOnInteract = source.DebugControllerStatsOnInteract;
             EnableWaterfallCompat = source.EnableWaterfallCompat;
             WaterfallCompatDebug = source.WaterfallCompatDebug;
+            DisableVanillaWaterSourceRegen = source.DisableVanillaWaterSourceRegen;
             VerboseDebug = source.VerboseDebug;
         }
     }

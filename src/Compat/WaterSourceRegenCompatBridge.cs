@@ -16,8 +16,19 @@ internal sealed class WaterSourceRegenCompatBridge : IDisposable
         harmony = new Harmony($"{ArchimedesScrewModSystem.ModId}.compat.source-regen");
     }
 
-    public void EnsurePatched()
+    public void RefreshForConfig(ArchimedesScrewConfig.WaterConfig waterConfig)
     {
+        if (!waterConfig.DisableVanillaWaterSourceRegen)
+        {
+            Unpatch();
+            ArchimedesScrewModSystem.LogVerboseOrNotification(
+                api.Logger,
+                "{0} [compat/source-regen] Disabled by config; vanilla water source regeneration allowed",
+                ArchimedesScrewModSystem.LogPrefix
+            );
+            return;
+        }
+
         DisableWaterSourceRegenPatch.Api = api;
 
         if (isPatched)
@@ -37,7 +48,11 @@ internal sealed class WaterSourceRegenCompatBridge : IDisposable
         }
 
         isPatched = true;
-        ArchimedesScrewModSystem.LogVerboseOrNotification(api.Logger, "{0} [compat/source-regen] Water source regeneration disable active", ArchimedesScrewModSystem.LogPrefix);
+        ArchimedesScrewModSystem.LogVerboseOrNotification(
+            api.Logger,
+            "{0} [compat/source-regen] Water source regeneration disable active",
+            ArchimedesScrewModSystem.LogPrefix
+        );
     }
 
     public void Dispose()
