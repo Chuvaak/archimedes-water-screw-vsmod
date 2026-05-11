@@ -2,6 +2,7 @@
 set -euo pipefail
 
 mod_dir="bin/Release/Mods/mod"
+rm -rf "$mod_dir"
 dotnet build -f net10.0 -c Release
 
 # Create the zip file in the mod directory
