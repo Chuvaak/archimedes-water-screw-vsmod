@@ -198,25 +198,6 @@ public sealed class BlockWaterArchimedesScrew : BlockMPBase
         if (world.Side == EnumAppSide.Server && byPlayer is IServerPlayer splr)
         {
             splr.SendMessage(GlobalConstants.InfoLogChatGroup, message, EnumChatType.Notification);
-
-            if (world.BlockAccessor.GetBlock(blockSel.Position) is BlockWaterArchimedesScrew clickedScrew &&
-                clickedScrew.IsIntakeBlock() &&
-                world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityWaterArchimedesScrew controllerBe)
-            {
-                splr.SendMessage(
-                    GlobalConstants.InfoLogChatGroup,
-                    controllerBe.GetCompactControllerStatusLine(),
-                    EnumChatType.Notification
-                );
-            }
-
-            if (api.ModLoader.GetModSystem<ArchimedesScrewModSystem>().Config.Water.DebugControllerStatsOnInteract &&
-                world.BlockAccessor.GetBlock(blockSel.Position) is BlockWaterArchimedesScrew debugClickedScrew &&
-                debugClickedScrew.IsIntakeBlock() &&
-                world.BlockAccessor.GetBlockEntity(blockSel.Position) is BlockEntityWaterArchimedesScrew debugControllerBe)
-            {
-                debugControllerBe.LogDebugControllerStats();
-            }
         }
 
         ArchimedesScrewModSystem.LogVerboseOrNotification(api.Logger, "{0} Status check at {1}: {2}", ArchimedesScrewModSystem.LogPrefix, blockSel.Position, message);
@@ -272,11 +253,9 @@ public sealed class BlockWaterArchimedesScrew : BlockMPBase
                    .TryResolveRealisticWaterIntakeFamily(currentFluid, out _);
     }
 
-    /// <summary>Vanilla or mod-managed liquid suitable for an intake (family matches screw output).</summary>
+    /// <summary>Vanilla liquid suitable for an intake (family matches screw output).</summary>
     private static bool IsValidIntakeFluidBlock(Block block)
     {
-        return block.IsLiquid() &&
-               (ArchimedesWaterFamilies.TryResolveVanillaFamily(block, out _) ||
-                ArchimedesWaterFamilies.TryResolveManagedFamily(block, out _));
+        return block.IsLiquid() && ArchimedesWaterFamilies.TryResolveVanillaFamily(block, out _);
     }
 }

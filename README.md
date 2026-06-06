@@ -5,22 +5,18 @@ Mechanically powered water lifting for Vintage Story.
 ## Features
 
 - Vertical Archimedes screw multiblock with intake, straight segments, and outlet.
-- Intake can be placed before water arrives; activation still requires valid intake fluid.
-- Pumps and maintains managed water at the outlet while powered.
-- Supports relay sources for long-distance aqueduct flow.
-- Relay promotion ordering is configurable (deterministic or random within equal-distance buckets).
-- Handles ownership and cleanup of managed sources when assemblies become invalid.
-- Save/load-safe controller ownership restore and relay stabilization.
-- Truncation-safe behavior for very large connected water networks.
-- Optional Waterfall compatibility hooks.
-- Configurable runtime tuning (including Config Lib support) and optional verbose debug logging.
+- Intake can be placed before water arrives; activation still requires water at the intake.
+- Places a single regular level-7 water source at the outlet when the assembly is valid, powered, and the intake sits in water.
+- The output source matches the intake fluid family (water, salt water, or boiling water).
+- Removes the created source as soon as the assembly is invalidated (power lost, structure broken, or intake out of water).
+- Optional RealisticWater compatibility (places and sustains a realistic-water outlet when that mod is installed).
 
 ## Build
 
 Requirements:
 
-- .NET 8 SDK
-- Vintage Story 1.21.6
+- .NET 10 SDK
+- Vintage Story 1.22+
 
 Build:
 
@@ -35,9 +31,3 @@ Build output is under `bin/Debug/Mods/mod/`.
 ## Install
 
 Copy the contents of `bin/Debug/Mods/mod/` into your Vintage Story mods folder, or zip that folder for distribution.
-
-## Admin commands
-
-- `/archscrew purge`
-- `/archscrew purgewater`
-- `/archscrew purgescrews`

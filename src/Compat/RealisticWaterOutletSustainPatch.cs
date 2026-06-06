@@ -68,7 +68,6 @@ internal static class RealisticWaterOutletSustainPatch
             return true;
         }
 
-        ArchimedesPerf.AddCount("compat.realisticwater.outletSustain.preventedLowering");
         __result = false;
         return false;
     }
@@ -110,7 +109,6 @@ internal static class RealisticWaterOutletSustainPatch
         lowerBlock.OnNeighbourBlockChange(world, pos, abovePos);
         NotifyRealisticWaterNeighbors(world, pos);
         world.BlockAccessor.MarkBlockDirty(pos);
-        ArchimedesPerf.AddCount("compat.realisticwater.shutdownDrain.forceLower");
         return true;
     }
 

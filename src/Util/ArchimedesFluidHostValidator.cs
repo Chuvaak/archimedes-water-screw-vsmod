@@ -32,7 +32,6 @@ internal static class ArchimedesFluidHostValidator
         Block targetFluid = ba.GetBlock(targetPos, BlockLayersAccess.Fluid);
 
         bool fluidClear = targetFluid.Id == 0 ||
-                          ArchimedesWaterFamilies.IsManagedWater(targetFluid) ||
                           IsVanillaWaterBlock(targetFluid) ||
                           IsRealisticWaterCompatBlock(targetFluid);
         bool hostableCell = IsHostableCellByGeometry(targetSolid, targetPos);
@@ -63,7 +62,6 @@ internal static class ArchimedesFluidHostValidator
     {
         if (solidBlock.Id == 0 ||
             solidBlock.ForFluidsLayer ||
-            ArchimedesWaterFamilies.IsManagedWater(solidBlock) ||
             IsRealisticWaterCompatBlock(solidBlock))
         {
             return true;

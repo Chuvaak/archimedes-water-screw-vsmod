@@ -18,8 +18,8 @@ internal sealed class RealisticWaterCompatBridge : IDisposable
     private const int RealisticWaterSustainedLevel = 6;
     private const int RealisticWaterSustainedSublevel = 20;
 
-    private static readonly Dictionary<long, SustainedOutlet> sustainedOutletsByKey = new();
-    private static readonly Dictionary<long, ShutdownDrainOrigin> shutdownDrainOriginsByKey = new();
+    private static readonly Dictionary<BlockPos, SustainedOutlet> sustainedOutletsByPos = new();
+    private static readonly Dictionary<BlockPos, ShutdownDrainOrigin> shutdownDrainOriginsByPos = new();
 
     private readonly ICoreServerAPI api;
     private readonly Harmony harmony;
@@ -31,10 +31,9 @@ internal sealed class RealisticWaterCompatBridge : IDisposable
         harmony = new Harmony($"{ArchimedesScrewModSystem.ModId}.compat.realisticwater");
         IsActive = api.ModLoader.IsModEnabled(RealisticWaterModId);
         RefreshPatchState();
-        ArchimedesScrewModSystem.LogVerboseOrNotification(
-            api.Logger,
+        api.Logger.Notification(
             IsActive
-                ? "{0} [compat/realisticwater] Compat active; relay sources disabled and outlet sustain patch enabled"
+                ? "{0} [compat/realisticwater] Compat active; outlet sustain patch enabled"
                 : "{0} [compat/realisticwater] Mod not installed; compat inactive",
             ArchimedesScrewModSystem.LogPrefix);
     }
@@ -44,8 +43,8 @@ internal sealed class RealisticWaterCompatBridge : IDisposable
     public void Dispose()
     {
         Unpatch();
-        sustainedOutletsByKey.Clear();
-        shutdownDrainOriginsByKey.Clear();
+        sustainedOutletsByPos.Clear();
+        shutdownDrainOriginsByPos.Clear();
     }
 
     public bool TryResolveOutletBlock(string familyId, out Block outletBlock)
@@ -88,9 +87,7 @@ internal sealed class RealisticWaterCompatBridge : IDisposable
             return;
         }
 
-        long key = ArchimedesPosKey.Pack(pos);
-        sustainedOutletsByKey[key] = new SustainedOutlet(outletBlock.Id, familyId, Environment.TickCount64 + OutletSustainTtlMs);
-        ArchimedesPerf.AddCount("compat.realisticwater.outletSustain.refresh");
+        sustainedOutletsByPos[pos.Copy()] = new SustainedOutlet(outletBlock.Id, familyId, Environment.TickCount64 + OutletSustainTtlMs);
     }
 
     public void UnregisterSustainedOutlet(BlockPos? pos)
@@ -100,11 +97,9 @@ internal sealed class RealisticWaterCompatBridge : IDisposable
             return;
         }
 
-        long key = ArchimedesPosKey.Pack(pos);
-        bool removed = sustainedOutletsByKey.Remove(key);
+        bool removed = sustainedOutletsByPos.Remove(pos);
         if (removed)
         {
-            ArchimedesPerf.AddCount("compat.realisticwater.outletSustain.unregister");
             Block currentFluid = api.World.BlockAccessor.GetBlock(pos, BlockLayersAccess.Fluid);
             if (currentFluid.Code?.Path.StartsWith("realisticwater-", StringComparison.Ordinal) == true)
             {
@@ -120,7 +115,7 @@ internal sealed class RealisticWaterCompatBridge : IDisposable
         long nowMs = Environment.TickCount64;
         PruneExpiredShutdownDrainOrigins(nowMs);
 
-        foreach (ShutdownDrainOrigin origin in shutdownDrainOriginsByKey.Values)
+        foreach (ShutdownDrainOrigin origin in shutdownDrainOriginsByPos.Values)
         {
             if (origin.Dimension == pos.dimension &&
                 Math.Abs(origin.X - pos.X) + Math.Abs(origin.Y - pos.Y) + Math.Abs(origin.Z - pos.Z) <= ShutdownDrainCascadeRadius)
@@ -134,8 +129,7 @@ internal sealed class RealisticWaterCompatBridge : IDisposable
 
     internal static bool ShouldSustainOutlet(Block block, IWorldAccessor world, BlockPos pos)
     {
-        long key = ArchimedesPosKey.Pack(pos);
-        if (!sustainedOutletsByKey.TryGetValue(key, out SustainedOutlet outlet))
+        if (!sustainedOutletsByPos.TryGetValue(pos, out SustainedOutlet outlet))
         {
             return false;
         }
@@ -143,8 +137,7 @@ internal sealed class RealisticWaterCompatBridge : IDisposable
         long nowMs = Environment.TickCount64;
         if (outlet.ExpiresAtMs <= nowMs)
         {
-            sustainedOutletsByKey.Remove(key);
-            ArchimedesPerf.AddCount("compat.realisticwater.outletSustain.expired");
+            sustainedOutletsByPos.Remove(pos);
             return false;
         }
 
@@ -161,22 +154,21 @@ internal sealed class RealisticWaterCompatBridge : IDisposable
     {
         long nowMs = Environment.TickCount64;
         PruneExpiredShutdownDrainOrigins(nowMs);
-        shutdownDrainOriginsByKey[ArchimedesPosKey.Pack(pos)] = new ShutdownDrainOrigin(
+        shutdownDrainOriginsByPos[pos.Copy()] = new ShutdownDrainOrigin(
             pos.X,
             pos.Y,
             pos.Z,
             pos.dimension,
             nowMs + ShutdownDrainTtlMs);
-        ArchimedesPerf.AddCount("compat.realisticwater.shutdownDrain.register");
     }
 
     private static void PruneExpiredShutdownDrainOrigins(long nowMs)
     {
-        foreach (long key in shutdownDrainOriginsByKey.Keys.ToArray())
+        foreach (BlockPos key in shutdownDrainOriginsByPos.Keys.ToArray())
         {
-            if (shutdownDrainOriginsByKey[key].ExpiresAtMs <= nowMs)
+            if (shutdownDrainOriginsByPos[key].ExpiresAtMs <= nowMs)
             {
-                shutdownDrainOriginsByKey.Remove(key);
+                shutdownDrainOriginsByPos.Remove(key);
             }
         }
     }
@@ -230,15 +222,14 @@ internal sealed class RealisticWaterCompatBridge : IDisposable
         harmony.CreateClassProcessor(typeof(RealisticWaterOutletSustainPatch)).Patch();
         if (!RealisticWaterOutletSustainPatch.LastPrepareSucceeded)
         {
-            ArchimedesScrewModSystem.LogVerboseOrNotification(
-                api.Logger,
+            api.Logger.Notification(
                 "{0} [compat/realisticwater] Harmony skipped outlet sustain patch (target method not resolved)",
                 ArchimedesScrewModSystem.LogPrefix);
             return;
         }
 
         isPatched = true;
-        ArchimedesScrewModSystem.LogVerboseOrNotification(api.Logger, "{0} [compat/realisticwater] Outlet sustain patch active", ArchimedesScrewModSystem.LogPrefix);
+        api.Logger.Notification("{0} [compat/realisticwater] Outlet sustain patch active", ArchimedesScrewModSystem.LogPrefix);
     }
 
     private void Unpatch()
@@ -250,7 +241,7 @@ internal sealed class RealisticWaterCompatBridge : IDisposable
 
         harmony.UnpatchAll(harmony.Id);
         isPatched = false;
-        ArchimedesScrewModSystem.LogVerboseOrNotification(api.Logger, "{0} [compat/realisticwater] Outlet sustain patch unpatched", ArchimedesScrewModSystem.LogPrefix);
+        api.Logger.Notification("{0} [compat/realisticwater] Outlet sustain patch unpatched", ArchimedesScrewModSystem.LogPrefix);
     }
 
     private bool TryGetBlock(AssetLocation code, out Block block)

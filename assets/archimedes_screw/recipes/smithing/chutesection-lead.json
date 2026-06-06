@@ -17,5 +17,6 @@
     ]
   ],
   "name": "chutesection",
-  "output": { "type": "item", "code": "archimedes_screw:chutesection-lead" }
+  "output": { "type": "item", "code": "archimedes_screw:chutesection-lead" },
+  "code": "chutesection-lead"
 }
